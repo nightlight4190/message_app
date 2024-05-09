@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:message_app/messaging_app.dart';
+import 'package:message_app/hw_practice.dart';
 
 void main() {
   runApp(const MyApp());
@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MessagingApp(),
+      home: const HwPractice(),
     );
   }
 }
