@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:message_app/pages/chat_home.dart';
+import 'package:message_app/pages/view_page/splashscreen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -13,7 +13,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       theme: ThemeData(fontFamily: "Poppins"),
       debugShowCheckedModeBanner: false,
-      home: ChatHome(),
+      home: SplashScreen(),
     );
   }
 }

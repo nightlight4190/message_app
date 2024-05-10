@@ -8,12 +8,14 @@ import 'package:http/http.dart' as http;
 import '../../constants.dart';
 
 class MsgContainer extends StatefulWidget {
+  final int myId;
   Map<String, dynamic> msg;
   Function onMessageDeletedOrEdited;
   MsgContainer({
     super.key,
     required this.msg,
     required this.onMessageDeletedOrEdited,
+    required this.myId,
   });
 
   @override
@@ -29,6 +31,10 @@ class _MsgContainerState extends State<MsgContainer> {
     textEditingController.text = widget.msg['message'];
   }
 
+  bool wasSentByMe() {
+    return (widget.myId.toString() == widget.msg['sentBy']['id'].toString());
+  }
+
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -36,35 +42,42 @@ class _MsgContainerState extends State<MsgContainer> {
         Expanded(
           child: Container(),
         ),
-        Container(
-          width: MediaQuery.of(context).size.width * 0.5,
-          alignment: Alignment.centerRight,
-          margin: EdgeInsets.symmetric(vertical: 5),
+        InkWell(
+          onDoubleTap: () {
+            editDialog(context);
+          },
+          onLongPress: () {
+            deleteDialog(context);
+          },
           child: Container(
-            decoration: BoxDecoration(
-              color: pColor,
-              borderRadius: BorderRadius.circular(15),
-            ),
-            child: InkWell(
-              onDoubleTap: () {
-                editDialog(context);
-              },
-              onLongPress: () {
-                deleteDialog(context);
-              },
-              child: Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: Text(
-                  textAlign: TextAlign.left,
-                  widget.msg['message'],
-                  softWrap: true,
-                  maxLines: 5,
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.white,
+            width: MediaQuery.of(context).size.width * 0.9,
+            alignment:
+                (wasSentByMe()) ? Alignment.centerRight : Alignment.centerLeft,
+            margin: EdgeInsets.symmetric(vertical: 5),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (!wasSentByMe()) Text(widget.msg['sentBy']['name']),
+                Container(
+                  decoration: BoxDecoration(
+                    color: wasSentByMe() ? Colors.blue : pColor,
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: Text(
+                      widget.msg['message'],
+                      softWrap: true,
+                      maxLines: 5,
+                      textAlign: TextAlign.end,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
           ),
         ),

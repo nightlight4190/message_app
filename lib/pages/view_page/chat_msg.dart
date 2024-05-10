@@ -10,7 +10,13 @@ import '../../resources/components/msg_container.dart';
 import '../../constants.dart';
 
 class ChatMsg extends StatefulWidget {
-  const ChatMsg({super.key});
+  final int senderId;
+  // final String senderName;
+  const ChatMsg({
+    super.key,
+    required this.senderId,
+    // required this.senderName,
+  });
 
   @override
   State<ChatMsg> createState() => _ChatMsgState();
@@ -19,6 +25,19 @@ class ChatMsg extends StatefulWidget {
 class _ChatMsgState extends State<ChatMsg> {
   TextEditingController textEditingController = TextEditingController();
   bool isLoading = false;
+  Future<void> fetchMessage() async {
+    await Future.delayed(Duration(seconds: 1), () async {
+      setState(() {});
+      await fetchMessage();
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchMessage();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -48,7 +67,7 @@ class _ChatMsgState extends State<ChatMsg> {
             ),
           ),
           title: Text(
-            "John",
+            "Yogendra Subedi",
             style: TextStyle(
               fontSize: 14,
               color: sColor,
@@ -102,42 +121,44 @@ class _ChatMsgState extends State<ChatMsg> {
               child: SingleChildScrollView(
                 reverse: true,
                 child: FutureBuilder(
-                    future: http.get(Uri.parse("$ip/messages")),
-                    builder: (context, snapshot) {
-                      if (snapshot.hasError) {
-                        return Center(
-                          child: Text(
-                            "Error: ${snapshot.error}",
-                            style: TextStyle(color: Colors.red),
-                          ),
+                  future: http.get(Uri.parse("$ip/messages")),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasError) {
+                      return Center(
+                        child: Text(
+                          "Error: ${snapshot.error}",
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      );
+                    } else if (snapshot.hasData) {
+                      var decodedResponse = jsonDecode(snapshot.data!.body);
+                      if (decodedResponse['status'] == 'success') {
+                        List messages = decodedResponse['data'];
+                        return Column(
+                          children: messages
+                              .map(
+                                (e) => MsgContainer(
+                                  myId: widget.senderId,
+                                  msg: e,
+                                  onMessageDeletedOrEdited: () {
+                                    setState(() {});
+                                  },
+                                ),
+                              )
+                              .toList(),
                         );
-                      } else if (snapshot.hasData) {
-                        var decodedResponse = jsonDecode(snapshot.data!.body);
-                        if (decodedResponse['status'] == 'success') {
-                          List messages = decodedResponse['data'];
-                          return Column(
-                            children: messages
-                                .map(
-                                  (e) => MsgContainer(
-                                    msg: e,
-                                    onMessageDeletedOrEdited: () {
-                                      setState(() {});
-                                    },
-                                  ),
-                                )
-                                .toList(),
-                          );
-                        } else {
-                          return Text("Something went wrong");
-                        }
                       } else {
-                        // loading condition
-                        return Center(child: CircularProgressIndicator());
+                        return Text("Something went wrong");
                       }
-                    }),
+                    } else {
+                      // loading condition
+                      return Center(child: CircularProgressIndicator());
+                    }
+                  },
+                ),
               ),
             ),
-            Container(
+            SizedBox(
               height: 60,
               width: MediaQuery.of(context).size.width,
               child: TextField(
@@ -171,7 +192,11 @@ class _ChatMsgState extends State<ChatMsg> {
                           Uri.parse('$ip/messages'),
                           headers: {"Content-Type": "application/json"},
                           body: jsonEncode(
-                              {"message": textEditingController.text}),
+                            {
+                              "message": textEditingController.text,
+                              "sentBy": "${widget.senderId}"
+                            },
+                          ),
                         );
                         textEditingController.clear();
                         var decodedResponse = jsonDecode(response.body);
@@ -187,7 +212,6 @@ class _ChatMsgState extends State<ChatMsg> {
                           isLoading = false;
                         });
                       },
-                      
                     ),
                   ),
                 ),
