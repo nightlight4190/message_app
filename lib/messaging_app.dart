@@ -41,9 +41,10 @@ class _MessagingAppState extends State<MessagingApp> {
           children: [
             Expanded(
               child: SingleChildScrollView(
+                reverse: true,
                 child: FutureBuilder(
                     future: http
-                        .get(Uri.parse("http://10.32.17.234:3000/messages")),
+                        .get(Uri.parse("http://10.32.16.252:3000/messages")),
                     builder: (context, snapshot) {
                       if (snapshot.hasError) {
                         return Text(
@@ -107,7 +108,7 @@ class _MessagingAppState extends State<MessagingApp> {
                       _isSendingRequest = true;
                     });
                     var response = await http.post(
-                        Uri.parse("http://10.32.17.234:3000/messages"),
+                        Uri.parse("http://10.32.16.252:3000/messages"),
                         headers: {
                           "Content-Type": "application/json",
                         },

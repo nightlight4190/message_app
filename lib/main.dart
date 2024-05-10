@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:message_app/hw_practice.dart';
+import 'package:message_app/pages/chat_home.dart';
 
 void main() {
   runApp(const MyApp());
@@ -11,13 +11,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      theme: ThemeData(fontFamily: "Poppins"),
       debugShowCheckedModeBanner: false,
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      home: const HwPractice(),
+      home: ChatHome(),
     );
   }
 }
