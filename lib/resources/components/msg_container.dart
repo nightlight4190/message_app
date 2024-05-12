@@ -11,12 +11,11 @@ class MsgContainer extends StatefulWidget {
   final int myId;
   Map<String, dynamic> msg;
   Function onMessageDeletedOrEdited;
-  MsgContainer({
-    super.key,
-    required this.msg,
-    required this.onMessageDeletedOrEdited,
-    required this.myId,
-  });
+  MsgContainer(
+      {super.key,
+      required this.msg,
+      required this.myId,
+      required this.onMessageDeletedOrEdited});
 
   @override
   State<MsgContainer> createState() => _MsgContainerState();
@@ -50,10 +49,10 @@ class _MsgContainerState extends State<MsgContainer> {
             deleteDialog(context);
           },
           child: Container(
-            width: MediaQuery.of(context).size.width * 0.9,
+            width: MediaQuery.of(context).size.width * 0.8,
             alignment:
                 (wasSentByMe()) ? Alignment.centerRight : Alignment.centerLeft,
-            margin: EdgeInsets.symmetric(vertical: 5),
+            margin: EdgeInsets.symmetric(vertical: 10),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -117,12 +116,13 @@ class _MsgContainerState extends State<MsgContainer> {
                             foregroundColor: WidgetStatePropertyAll(sColor),
                             backgroundColor: WidgetStatePropertyAll(pColor)),
                         onPressed: () async {
-                          var response = await http.delete(
-                              Uri.parse('$ip/messages/${widget.msg["id"]}'));
+                          var response = await http.delete(Uri.parse(
+                              "$apiURL/messages/${widget.msg['id']}"));
                           if (response.statusCode == 200) {
                             var decoded = jsonDecode(response.body);
                             if (decoded['status'] == 'fail') {
                               print(decoded['data']);
+                              return;
                             } else {
                               widget.onMessageDeletedOrEdited();
                               Navigator.of(context).pop();
@@ -185,21 +185,14 @@ class _MsgContainerState extends State<MsgContainer> {
                           backgroundColor: WidgetStatePropertyAll(pColor)),
                       onPressed: () async {
                         var response = await http.put(
-                          Uri.parse('$ip/messages/${widget.msg["id"]}'),
-                          headers: {"Content-Type": "application/json"},
-                          body: jsonEncode(
-                              {"message": textEditingController.text}),
-                        );
-                        if (response.statusCode == 200) {
-                          var decoded = jsonDecode(response.body);
-                          if (decoded['status'] == 'fail') {
-                            print(decoded['data']);
-                            return;
-                          } else {
-                            widget.onMessageDeletedOrEdited();
-                            Navigator.of(context).pop();
-                          }
-                        }
+                            Uri.parse("$apiURL/messages/${widget.msg['id']}"),
+                            headers: {"Content-Type": "application/json"},
+                            body: jsonEncode({
+                              "message": textEditingController.text,
+                            }));
+                        // print(response.body);
+                        widget.onMessageDeletedOrEdited();
+                        Navigator.of(context).pop();
                       },
                       child: Text("Edit"),
                     ),

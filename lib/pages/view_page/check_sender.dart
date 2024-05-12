@@ -1,12 +1,14 @@
 // ignore_for_file: prefer_const_literals_to_create_immutables
-
 import 'dart:convert';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:message_app/constants.dart';
-import 'package:http/http.dart' as http;
+import 'package:flutter/widgets.dart';
+import "package:http/http.dart" as http;
 import 'package:message_app/pages/view_page/chat_msg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../constants.dart';
 
 class CheckSender extends StatefulWidget {
   const CheckSender({super.key});
@@ -17,10 +19,11 @@ class CheckSender extends StatefulWidget {
 
 class _CheckSenderState extends State<CheckSender> {
   TextEditingController nameController = TextEditingController();
-  GlobalKey<FormState> formkey = GlobalKey<FormState>();
-  bool isLoading = true;
+  GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
-  Future savePersoInfo(String name, int id) async {
+  bool isLoading = false;
+
+  Future<void> savePersonInfo(String name, int id) async {
     var prefs = await SharedPreferences.getInstance();
     await prefs.setString("sender_name", name);
     await prefs.setInt("sender_id", id);
@@ -37,7 +40,7 @@ class _CheckSenderState extends State<CheckSender> {
         centerTitle: true,
       ),
       body: Form(
-        key: formkey,
+        key: formKey,
         child: Padding(
           padding: const EdgeInsets.all(20.0),
           child: Center(
@@ -45,7 +48,7 @@ class _CheckSenderState extends State<CheckSender> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  "Enter your name to join :",
+                  "Enter your name to join:",
                   style: TextStyle(
                     fontSize: 18,
                   ),
@@ -53,19 +56,14 @@ class _CheckSenderState extends State<CheckSender> {
                 SizedBox(
                   height: 10,
                 ),
-                SizedBox(
+                Container(
                   width: MediaQuery.of(context).size.width * .8,
                   child: TextFormField(
                     validator: (inputText) {
-                      if (inputText == null) {
-                        return "Enter something";
-                      }
+                      if (inputText == null) return "Enter something";
+                      if (inputText.isEmpty) return "Enter something";
                       if (!inputText.contains(" ")) {
-                        return "Enter your full name ";
-                      }
-
-                      if (inputText.isEmpty) {
-                        return " Enter something";
+                        return "Enter your full name with a space in between.";
                       }
                       return null;
                     },
@@ -84,16 +82,15 @@ class _CheckSenderState extends State<CheckSender> {
                   style: ButtonStyle(
                       backgroundColor: WidgetStatePropertyAll(pColor),
                       foregroundColor: WidgetStatePropertyAll(sColor)),
-                  onPressed: isLoading
+                  onPressed: !isLoading
                       ? () async {
-                          print("button pressed");
-                          if (formkey.currentState!.validate()) {
+                          if (formKey.currentState!.validate()) {
                             try {
                               setState(() {
                                 isLoading = true;
                               });
                               var response = await http.post(
-                                Uri.parse("$ip/peoples/new"),
+                                Uri.parse("$apiURL/peoples/new"),
                                 headers: {"Content-Type": "application/json"},
                                 body: jsonEncode(
                                   {"name": nameController.text},
@@ -102,38 +99,36 @@ class _CheckSenderState extends State<CheckSender> {
                               if (response.statusCode == 200) {
                                 print(response.body);
                                 var decoded = jsonDecode(response.body);
-                                await savePersoInfo(
-                                  decoded['data']['person']['name'],
-                                  decoded['data']['person']['id'],
-                                );
+                                await savePersonInfo(
+                                    decoded['data']['person']['name'],
+                                    decoded['data']['person']['id']);
                                 Navigator.of(context).pushReplacement(
                                   MaterialPageRoute(
                                     builder: (context) => ChatMsg(
                                       senderId: decoded['data']['person']['id'],
-                                      // senderName: decoded['data']
-                                      //     ['person']['name'],
                                     ),
                                   ),
                                 );
                               } else {
                                 throw Exception(
-                                    "Invalid response : ${response.body}");
+                                    "Invalid response: ${response.body}");
                               }
                             } catch (e) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Error: $e'),
-                                ),
-                              );
+                                  SnackBar(content: Text("Error: $e")));
+                            } finally {
+                              setState(() {
+                                isLoading = false;
+                              });
                             }
                           } else {
-                            print("Invalid");
+                            print("Invalid data");
                           }
                         }
                       : null,
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: isLoading
+                    child: !isLoading
                         ? Text(
                             "Continue",
                             style: TextStyle(
@@ -141,11 +136,12 @@ class _CheckSenderState extends State<CheckSender> {
                               fontWeight: FontWeight.w600,
                             ),
                           )
-                        : CircularProgressIndicator(
-                            color: Colors.teal,
+                        : CupertinoActivityIndicator(
+                            color: Colors.white,
+                            radius: 12,
                           ),
                   ),
-                ),
+                )
               ],
             ),
           ),
