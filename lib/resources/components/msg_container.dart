@@ -49,10 +49,10 @@ class _MsgContainerState extends State<MsgContainer> {
             deleteDialog(context);
           },
           child: Container(
-            width: MediaQuery.of(context).size.width * 0.8,
+            width: MediaQuery.of(context).size.width * 0.9,
             alignment:
                 (wasSentByMe()) ? Alignment.centerRight : Alignment.centerLeft,
-            margin: EdgeInsets.symmetric(vertical: 10),
+            margin: EdgeInsets.symmetric(vertical: 5),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
