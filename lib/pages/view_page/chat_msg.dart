@@ -64,7 +64,7 @@ class _ChatMsgState extends State<ChatMsg> {
             ),
           ),
           title: Text(
-            "Bikash",
+            "Yogendra Subedi",
             style: TextStyle(
               fontSize: 14,
               color: sColor,
